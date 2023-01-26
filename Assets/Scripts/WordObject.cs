@@ -11,10 +11,15 @@ namespace Crossword
     {
         private WordInfo wordInfo;
         private Tassello[] tasselli;
+        private bool completed = false;
 
-        private bool completed;
-        public bool Completed => completed;
+        public bool Completed{
+            set { completed = value; CrosswordLogic.Instance.CheckForGameCompletion(); }
+            get { return completed; }
+        }
+        public Tassello[] Tasselli => tasselli;
 
+        //---------------------------------------------
 
         public WordObject(WordInfo wordInfo)
         {
@@ -35,11 +40,14 @@ namespace Crossword
                 }
                 else
                 {
-                    tasselloObj = null; //FIX!!! SETTA tasselloObj = AL TASSELLO GIA' POSIZIONATO
+                    tasselloObj = null; //FIX!!! SETTA tasselloObj = AL TASSELLO GIA' POSIZIONATO!!!!!!
                 }
                 Tassello tassello = tasselloObj.GetComponent<Tassello>();
                 tasselli[i] = tassello;
-                tassello.wordObjectParents.Add(this);
+                if(tassello.wordObjectParents[0] == null)
+                    tassello.wordObjectParents[0] = this;
+                else
+                    tassello.wordObjectParents[1] = this;
             }
         }
 
@@ -48,8 +56,10 @@ namespace Crossword
             string currentString = "";
             foreach(Tassello tassello in tasselli)
                 currentString += tassello.Lettera;
-            if(currentString == wordInfo.word)
-                completed = true;
+            if (currentString == wordInfo.word)
+            {
+                Completed = true;
+            }
         }
 
     }
