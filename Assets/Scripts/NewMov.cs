@@ -34,7 +34,7 @@ public class NewMov : MonoBehaviour
                 case TouchPhase.Began:
                     _actualPosX = transform.position.x;     //posizione inziale camera
                     startPos = touch.position;              //posizione inziale dito screen
-                    Debug.Log("Inizio");
+                    //Debug.Log("Inizio");
                     break;
                 case TouchPhase.Moved:
                     finishPos = touch.position;             //posizione attuale dito
@@ -42,11 +42,11 @@ public class NewMov : MonoBehaviour
                     var _fPos = Camera.main.ScreenToWorldPoint(finishPos);      //attuale dito world
                     var _pos = (_sPos - _fPos);                                 //spostamento dito world
                     transform.position = new Vector3(_actualPosX + _pos.x, transform.position.y, transform.position.z);
-                    Debug.Log("Mi muovo");
+                    //Debug.Log("Mi muovo");
                     break;
                 case TouchPhase.Ended:
-                    Debug.Log("Finisco");
-                    Debug.Log(_actualPosX);
+                    //Debug.Log("Finisco");
+                    //Debug.Log(_actualPosX);
                     //transform.position = new Vector3(0, 0, -10.0f);
                     checkPosition();
                     break;
@@ -75,7 +75,7 @@ public class NewMov : MonoBehaviour
     {
         while (transform.position != targetPosition)
         {
-            Debug.Log("I'm SLIDING!!!!");
+            //Debug.Log("I'm SLIDING!!!!");
             transform.position = Vector3.MoveTowards(transform.position, targetPosition, slideSpeed * Time.deltaTime);
             yield return null;
         }

@@ -7,22 +7,26 @@ namespace Crossword {
     public class Tassello : MonoBehaviour
     {
         public WordObject[] wordObjectParents = new WordObject[2];
-        private char lettera = ' ';
+        [SerializeField] private Text lettera;
 
-        public char Lettera => lettera;
+        public char Lettera => lettera.text[0];
+
+        private void Awake()
+        {
+            lettera.text = " ";
+        }
 
         public void SetLettera(char lettera)    //CALLED WHEN A LETTER GETS SET ONTO THE TASSELLO
         {
-            this.lettera = lettera;
-            foreach (WordObject wordObject in wordObjectParents)
-            {
-                wordObject.CheckWordCompletion();
-            }
+            this.lettera.text = lettera + "";
         }
 
         public void SelectTassello()
         {
-            CrosswordLogic.Instance.UpdateSelection(this);
+            if(CrosswordLogic.Instance.CurrentSelectedWordObject == wordObjectParents[0] && wordObjectParents[1] != null)
+                CrosswordLogic.Instance.OnWordSelection(wordObjectParents[1]);
+            else
+                CrosswordLogic.Instance.OnWordSelection(wordObjectParents[0]);
         }
     }
 }

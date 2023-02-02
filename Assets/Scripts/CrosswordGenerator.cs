@@ -9,52 +9,70 @@ namespace Crossword
     {
         const string JSON_PATH = "C:/Users/Borghesi Alessandro/Desktop/TEST.json";
         //const char DEFAULT_CHAR = '.';
-        const int MAX_ROW = 7, MAX_COLUMN = 9;
+        public const int MAX_ROW = 7, MAX_COLUMN = 9;
         static int TARGET_NUMBER_OF_WORDS = 10;
         const int MAX_ITERATIONS = 20;   //n. massimo di tentativi per trovare una parola inseribile.
 
         static int iterations;  //contatore iterazioni per trovare una parola inseribile. Viene azzerato se una parola viene trovata.
 
-        static int xMin = 0, xMax = 0, yMin = 0, yMax = 0;
-
         static string[] dictionary;
 
-        static List<WordInfo> wordInfoList = new List<WordInfo>();
+        static GenerationInfo generationInfo;
+
         static List<int> usedDictionaryIDs = new List<int>();
 
         static List<string> failedWords = new List<string>();
 
-        public static List<WordInfo> GenerateWords()
+        /// <summary>
+        /// Ritorna le informazioni del crossword che genera.
+        /// </summary>
+        /// <returns></returns>
+        public static GenerationInfo GenerateWords()
         {
-            InizializzaDizionario();
+
+            Inizializza();
 
             AddFirstWordToMatrix();
 
-            while (wordInfoList.Count < TARGET_NUMBER_OF_WORDS)
+            while (generationInfo.wordInfoList.Count < TARGET_NUMBER_OF_WORDS)
             {
                 if (iterations > MAX_ITERATIONS)
                 {
-                    Debug.LogError("!! !! !! Raggiunto numero iterazioni massimo. !! !! !!");
+                    Debug.LogWarning("!! !! !! Raggiunto numero iterazioni massimo. !! !! !!");
                     break;
                 }
                 AddWordToMatrix2(true);
             }
-
-
-            Debug.Log("Ci sono stati " + wordInfoList.Count + " inserimenti riusciti.\nCi sono stati " + failedWords.Count + " inserimenti falliti\n\t");
-            /*foreach (string w in failedWords)
-                Console.Write("<" + w + "> ");*/
-
-            return wordInfoList;
+            //--------DEBUGGING------------
+            string debugString = "";
+            foreach (WordInfo w in generationInfo.wordInfoList)
+                debugString += ("<" + w.word + "> ");
+            Debug.Log(debugString + "\nCi sono stati " + generationInfo.wordInfoList.Count + " inserimenti riusciti.\nCi sono stati " + failedWords.Count + " inserimenti falliti\n\t");
+            Debug.Log("Massimi e minimi, x e poi y: " + generationInfo.xMax + " " + generationInfo.xMin + " " + generationInfo.yMax + " " + generationInfo.yMin);
+            //--------END-DEBUGGING--------
+            return generationInfo;
         }
 
+        private static void Inizializza()
+        {
+            generationInfo = new GenerationInfo();
+            generationInfo.wordInfoList = new List<WordInfo>();
+            usedDictionaryIDs.Clear();
+            failedWords.Clear();
+
+            InizializzaDizionario();
+        }
 
         private static void InizializzaDizionario()
         {
             try
             {
-                TextAsset jsonFile = Resources.Load<TextAsset>("/Dictionaries/TEST.json");
-                dictionary = JsonUtility.FromJson<string[]>(jsonFile.ToString());
+                TextAsset jsonFile = Resources.Load<TextAsset>("Dictionaries/TEST");
+                Debug.Log("JSON " + jsonFile.ToString());
+                //string[] a = { "a", "v", "ba" };
+                //Debug.Log("lolololol " + JsonUtility.ToJson(a).ToString());
+                Dictionary dictionaryClass = JsonUtility.FromJson<Dictionary>(jsonFile.ToString());
+                dictionary = dictionaryClass.words;
             }
             catch
             {
@@ -65,18 +83,18 @@ namespace Crossword
         private static void AddFirstWordToMatrix()
         {
             int id = Random.Range(0, dictionary.Length);
-            string word = dictionary[id];
+            string word = dictionary[id];   
 
             bool horizontal = Random.Range(0, 2) == 1;
 
             Debug.Log("Prima parola: <" + word + ">, orientamento orizzontale=" + horizontal);
 
-            wordInfoList.Add(CreateWordInfo(word,0,0,horizontal));
+            generationInfo.wordInfoList.Add(CreateWordInfo(word,0,0,horizontal));
             usedDictionaryIDs.Add(id);
             if (horizontal)
-                xMax = word.Length - 1;
+                generationInfo.xMax = word.Length - 1;
             else
-                yMax = word.Length - 1;
+                generationInfo.yMax = word.Length - 1;
         }
 
         private static void AddWordToMatrix2(bool uniqueWords = false)  //!!!! VISTO CHE E' FATTO MALE, SE uniqueWords = false, PUO' ANCHE RIPROVARE CON PAROLE CHE ERANO FALLITE!!
@@ -91,7 +109,7 @@ namespace Crossword
                     if (dictionary.Length <= usedDictionaryIDs.Count)
                     {
                         Debug.LogError("!! !! !! !! Il dizionario non contiene abbastanza elementi per usare il numero di parole richieste differenti. Questo potrebbe essere stato causato da tentativi falliti prematuri, che potrebbero invece funzionare una volta aggiunte più parole.");
-                        TARGET_NUMBER_OF_WORDS = wordInfoList.Count;
+                        TARGET_NUMBER_OF_WORDS = generationInfo.wordInfoList.Count;
                         return;
                     }
                 }
@@ -104,7 +122,7 @@ namespace Crossword
             for (int charIndex = 0; charIndex < newWord.word.Length; charIndex++)   //per ogni lettera della nuova parola...
             {
                 //Console.WriteLine("---Controllo per <" + newWord.word[charIndex] + ">");
-                foreach (WordInfo tangentWordInfo in wordInfoList)              //per ogni parola già presente
+                foreach (WordInfo tangentWordInfo in generationInfo.wordInfoList)              //per ogni parola già presente
                 {
                     //Console.WriteLine("------Controllo con <" + tangentWordInfo.word + "> alla posizione (" + tangentWordInfo.x + "," + tangentWordInfo.y + ")");
                     for (int i = 0; i < tangentWordInfo.word.Length; i++)       //per ogni lettera della parola già presente
@@ -122,10 +140,10 @@ namespace Crossword
                                 int wordMinCoord = newWord.y;                                   //FIX SEMPLIFICA?
                                 int wordMaxCoord = newWord.y + newWord.word.Length - 1;
 
-                                if (Mathf.Max(yMax, wordMaxCoord) - Mathf.Min(yMin, wordMinCoord) < MAX_ROW)   //la parola può stare nei limiti di grandezza.
+                                if (Mathf.Max(generationInfo.yMax, wordMaxCoord) - Mathf.Min(generationInfo.yMin, wordMinCoord) < MAX_ROW)   //la parola può stare nei limiti di grandezza.
                                 {
                                     bool valid = true;
-                                    foreach (WordInfo w in wordInfoList)
+                                    foreach (WordInfo w in generationInfo.wordInfoList)
                                     {
                                         //se la w è orizzontale
                                         if (w.horizontal)
@@ -170,9 +188,9 @@ namespace Crossword
                                     }
                                     if (valid)
                                     {
-                                        wordInfoList.Add(newWord);
-                                        yMax = Mathf.Max(yMax, wordMaxCoord);
-                                        yMin = Mathf.Min(yMin, wordMinCoord);
+                                        generationInfo.wordInfoList.Add(newWord);
+                                        generationInfo.yMax = Mathf.Max(generationInfo.yMax, wordMaxCoord);
+                                        generationInfo.yMin = Mathf.Min(generationInfo.yMin, wordMinCoord);
                                         iterations = 0;
                                         //Console.WriteLine("------------Parola <" + newWord.word + "> aggiunta con successo.");
                                         return;
@@ -188,10 +206,10 @@ namespace Crossword
                                 int wordMinCoord = newWord.x;                                   //FIX SEMPLIFICA?
                                 int wordMaxCoord = newWord.x + newWord.word.Length - 1;
 
-                                if (Mathf.Max(xMax, wordMaxCoord) - Mathf.Min(xMin, wordMinCoord) < MAX_COLUMN)   //la parola può stare nei limiti di grandezza.
+                                if (Mathf.Max(generationInfo.xMax, wordMaxCoord) - Mathf.Min(generationInfo.xMin, wordMinCoord) < MAX_COLUMN)   //la parola può stare nei limiti di grandezza.
                                 {
                                     bool valid = true;
-                                    foreach (WordInfo w in wordInfoList)
+                                    foreach (WordInfo w in generationInfo.wordInfoList)
                                     {
                                         //se la w non è orizzontale
                                         if (!w.horizontal)
@@ -236,9 +254,9 @@ namespace Crossword
                                     }
                                     if (valid)
                                     {
-                                        wordInfoList.Add(newWord);
-                                        xMax = Mathf.Max(xMax, wordMaxCoord);
-                                        xMin = Mathf.Min(xMin, wordMinCoord);
+                                        generationInfo.wordInfoList.Add(newWord);
+                                        generationInfo.xMax = Mathf.Max(generationInfo.xMax, wordMaxCoord);
+                                        generationInfo.xMin = Mathf.Min(generationInfo.xMin, wordMinCoord);
                                         iterations = 0;
                                         //Console.WriteLine("------------Parola <" + newWord.word + "> aggiunta con successo.");
                                         return;
@@ -309,4 +327,19 @@ namespace Crossword
 
         //public int dictionaryID;
     }
+
+    public struct GenerationInfo
+    {
+        public List<WordInfo> wordInfoList;
+        public List<(int,int)> incroci;
+        public int xMax, xMin, yMax, yMin;
+
+    }
+
+    [System.Serializable]
+    public class Dictionary
+    {
+        public string[] words;
+    }
 }
+
