@@ -17,6 +17,8 @@ public class NewMov : MonoBehaviour
     {
         if (Application.platform == RuntimePlatform.Android)
             Application.targetFrameRate = 120;
+        else
+            Application.targetFrameRate = 120;
     }
 
     // Update is called once per frame

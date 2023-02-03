@@ -25,6 +25,7 @@ namespace Crossword
         public WordObject(WordInfo wordInfo)
         {
             this.wordInfo = wordInfo;
+            this.wordInfo.word = this.wordInfo.word.ToUpper();
             tasselli = new Tassello[wordInfo.word.Length];
         }
 

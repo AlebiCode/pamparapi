@@ -18,7 +18,7 @@ namespace Crossword {
 
         public void SetLettera(char lettera)    //CALLED WHEN A LETTER GETS SET ONTO THE TASSELLO
         {
-            this.lettera.text = lettera + "";
+            this.lettera.text = lettera.ToString().ToUpper();
         }
 
         public void SelectTassello()

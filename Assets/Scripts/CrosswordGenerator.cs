@@ -15,7 +15,7 @@ namespace Crossword
 
         static int iterations;  //contatore iterazioni per trovare una parola inseribile. Viene azzerato se una parola viene trovata.
 
-        static string[] dictionary;
+        static string[] dictionary = null;
 
         static GenerationInfo generationInfo;
 
@@ -29,8 +29,10 @@ namespace Crossword
         /// <returns></returns>
         public static GenerationInfo GenerateWords()
         {
+            if(dictionary == null)
+                InizializzaDizionario();
 
-            Inizializza();
+            InizializzaVariabili();
 
             AddFirstWordToMatrix();
 
@@ -41,7 +43,7 @@ namespace Crossword
                     Debug.LogWarning("!! !! !! Raggiunto numero iterazioni massimo. !! !! !!");
                     break;
                 }
-                AddWordToMatrix2(true);
+                AddWordToMatrix(true);
             }
             //--------DEBUGGING------------
             string debugString = "";
@@ -49,28 +51,25 @@ namespace Crossword
                 debugString += ("<" + w.word + "> ");
             Debug.Log(debugString + "\nCi sono stati " + generationInfo.wordInfoList.Count + " inserimenti riusciti.\nCi sono stati " + failedWords.Count + " inserimenti falliti\n\t");
             Debug.Log("Massimi e minimi, x e poi y: " + generationInfo.xMax + " " + generationInfo.xMin + " " + generationInfo.yMax + " " + generationInfo.yMin);
+            PrintMatrixFromList();
             //--------END-DEBUGGING--------
             return generationInfo;
         }
 
-        private static void Inizializza()
+        private static void InizializzaVariabili()
         {
+            iterations = 0;
             generationInfo = new GenerationInfo();
             generationInfo.wordInfoList = new List<WordInfo>();
             usedDictionaryIDs.Clear();
             failedWords.Clear();
-
-            InizializzaDizionario();
         }
 
-        private static void InizializzaDizionario()
+        public static void InizializzaDizionario()
         {
             try
             {
                 TextAsset jsonFile = Resources.Load<TextAsset>("Dictionaries/TEST");
-                Debug.Log("JSON " + jsonFile.ToString());
-                //string[] a = { "a", "v", "ba" };
-                //Debug.Log("lolololol " + JsonUtility.ToJson(a).ToString());
                 Dictionary dictionaryClass = JsonUtility.FromJson<Dictionary>(jsonFile.ToString());
                 dictionary = dictionaryClass.words;
             }
@@ -87,7 +86,7 @@ namespace Crossword
 
             bool horizontal = Random.Range(0, 2) == 1;
 
-            Debug.Log("Prima parola: <" + word + ">, orientamento orizzontale=" + horizontal);
+            //Debug.Log("Prima parola: <" + word + ">, orientamento orizzontale=" + horizontal);
 
             generationInfo.wordInfoList.Add(CreateWordInfo(word,0,0,horizontal));
             usedDictionaryIDs.Add(id);
@@ -97,7 +96,7 @@ namespace Crossword
                 generationInfo.yMax = word.Length - 1;
         }
 
-        private static void AddWordToMatrix2(bool uniqueWords = false)  //!!!! VISTO CHE E' FATTO MALE, SE uniqueWords = false, PUO' ANCHE RIPROVARE CON PAROLE CHE ERANO FALLITE!!
+        private static void AddWordToMatrix(bool uniqueWords = false)  //!!!! VISTO CHE E' FATTO MALE, SE uniqueWords = false, PUO' ANCHE RIPROVARE CON PAROLE CHE ERANO FALLITE!!
         {
             WordInfo newWord;
 
@@ -273,39 +272,48 @@ namespace Crossword
             //Console.WriteLine("------------FALLITO INSERIMENTO <" + newWord.word + ">.");
         }
 
-        /*private static void PrintMatrixFromList()
+        private static void PrintMatrixFromList()
         {
-            char[][] output = new char[MAX_COLUMN][];
-            for (int i = 0; i < MAX_COLUMN; i++)
+            try
             {
-                output[i] = new char[MAX_ROW];
-                for (int j = 0; j < MAX_ROW; j++)
+                string outputStr = "";
+                char[][] output = new char[MAX_COLUMN][];
+                for (int i = 0; i < MAX_COLUMN; i++)
                 {
-                    output[i][j] = DEFAULT_CHAR;
+                    output[i] = new char[MAX_ROW];
+                    for (int j = 0; j < MAX_ROW; j++)
+                    {
+                        output[i][j] = '-';
+                    }
                 }
-            }
 
-            foreach (WordInfo wordInfo in wordInfoList)
-            {
-                for (int i = 0; i < wordInfo.word.Length; i++)
+                foreach (WordInfo wordInfo in generationInfo.wordInfoList)
                 {
-                    if(wordInfo.horizontal)
-                        output[-xMin + wordInfo.x + i][-yMin + wordInfo.y] = wordInfo.word[i];
-                    else
-                        output[-xMin + wordInfo.x][-yMin + wordInfo.y + i] = wordInfo.word[i];
+                    for (int i = 0; i < wordInfo.word.Length; i++)
+                    {
+                        if (wordInfo.horizontal)
+                            output[-generationInfo.xMin + wordInfo.x + i][-generationInfo.yMin + wordInfo.y] = wordInfo.word[i];
+                        else
+                            output[-generationInfo.xMin + wordInfo.x][-generationInfo.yMin + wordInfo.y + i] = wordInfo.word[i];
+                    }
                 }
-            }
 
-            for (int i = 0; i < MAX_ROW; i++)
-            {
-                for (int j = 0; j < MAX_COLUMN; j++)
+                for (int i = 0; i < MAX_ROW; i++)
                 {
-                    Console.Write(output[j][i] + " ");
+                    for (int j = 0; j < MAX_COLUMN; j++)
+                    {
+                        outputStr += output[j][i].ToString() + "\t";
+                    }
+                    outputStr += "\n";
                 }
-                Console.Write("\n");
+                Debug.Log(outputStr.ToUpper());
+            }
+            catch
+            {
+                //perchè non tiene in considerazione che le cooridnate possono sbordare da 0 a MAX_COLUMN o da 0 a MAX_ROW!!! amen!!!
+                Debug.LogWarning("Ho avuto problemi a stampare la matrice per il debugging. Chissenefrega lol non ho voglia di vedere perchè non funziona");
             }
         }
-        */
 
         static WordInfo CreateWordInfo(string word, int x, int y, bool horizontal/*, int dictionaryId*/)
         {
