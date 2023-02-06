@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
-namespace Crossword{
+namespace Crossword
+{
     public class CrosswordLogic : MonoBehaviour
     {
         //VARIABILI
@@ -10,7 +12,8 @@ namespace Crossword{
 
         [SerializeField] private Tassello tasselloPrefab;
         [SerializeField] private GameObject crosswordParent;
-        [SerializeField] private UnityEngine.UI.InputField inputField;
+        [SerializeField] private InputField inputField;
+        [SerializeField] private Text pamparapiText;
 
         private List<WordObject> wordObjects = new List<WordObject>();
         private WordObject currentSelectedWordObject = null;
@@ -25,13 +28,20 @@ namespace Crossword{
         {
             set
             {
-                if (CurrentSelectedWordObject != null)
-                    foreach (Tassello tassello in CurrentSelectedWordObject.tasselli)
-                        tassello.GetComponent<UnityEngine.UI.Image>().color = Color.white;
+                if (currentSelectedWordObject != null)
+                    if(!currentSelectedWordObject.Completed)
+                        foreach (Tassello tassello in currentSelectedWordObject.tasselli)
+                            SetTasselloColor(tassello, Color.white);
+
                 currentSelectedWordObject = value;
-                if(CurrentSelectedWordObject != null)
-                    foreach (Tassello tassello in CurrentSelectedWordObject.tasselli)
-                        tassello.GetComponent<UnityEngine.UI.Image>().color = Color.blue;
+
+                if(currentSelectedWordObject != null)
+                    foreach (Tassello tassello in currentSelectedWordObject.tasselli)
+                        SetTasselloColor(tassello, Color.cyan);
+
+                //------debug
+                if(currentSelectedWordObject != null)
+                    pamparapiText.text = currentSelectedWordObject.GetWordInfo.word;
             }
             get { return currentSelectedWordObject; }
         }
@@ -41,14 +51,23 @@ namespace Crossword{
             {
                 if (CurrentSelectedTassello)
                     if(CurrentSelectedTassello.wordObjectParents[0] == currentSelectedWordObject || CurrentSelectedTassello.wordObjectParents[1] == currentSelectedWordObject)
-                        currentSelectedTassello.GetComponent<UnityEngine.UI.Image>().color = Color.blue;
+                        SetTasselloColor(currentSelectedTassello, Color.cyan);
                     else
-                        currentSelectedTassello.GetComponent<UnityEngine.UI.Image>().color = Color.white;
+                        SetTasselloColor(currentSelectedTassello, Color.white);
                 currentSelectedTassello = value;
                 if (CurrentSelectedTassello)
-                    currentSelectedTassello.GetComponent<UnityEngine.UI.Image>().color = Color.yellow;
+                    SetTasselloColor(currentSelectedTassello, Color.yellow);
             }
             get { return currentSelectedTassello; }
+        }
+
+        private bool LevelCompleted {
+            get {
+                foreach (WordObject wordObject in wordObjects)
+                    if (!wordObject.Completed)
+                        return false;
+                return true;
+            }
         }
 
         //METODI UNITY
@@ -69,13 +88,6 @@ namespace Crossword{
         }
 
         #region METODI
-
-        public void DEBUGLetterInsert() //FIX!!!! REMOVE FROM FINAL BUILD!!
-        {
-            Debug.Log("ADD letter called!");
-            AddLetter(CurrentSelectedTassello, inputField.text[0]);
-            inputField.text = "";
-        }
 
         private void InstantiateSelf()
         {
@@ -115,6 +127,8 @@ namespace Crossword{
             wordObjects.Clear();
             foreach (Transform child in crosswordParent.GetComponentInChildren<Transform>())
                 Destroy(child.gameObject);
+
+            pamparapiText.text = "Loser";
         }
 
         //NON MI PIACE COME CONTROLLA SE E' GIA STATO PIAZZATO UN TASSELLO, MA FUNZIONA COMUNQUE LOL
@@ -180,14 +194,14 @@ namespace Crossword{
         /// Called when a tassello is pressed
         /// </summary>
         /// <param name="lettera"></param>
-        public void OnTasselloPress(char lettera)
+        /*public void OnTasselloPress(char lettera)
         {
             if (CurrentSelectedTassello)
             {
                 AddLetter(CurrentSelectedTassello, lettera);
                 CurrentSelectedTassello = FindNextFreeTassello(CurrentSelectedWordObject);
             }
-        }
+        }*/
 
         public void OnBackSpacePress()
         {
@@ -204,9 +218,12 @@ namespace Crossword{
                         if (wordObject.CheckWordCompletion())
                         {
                             Debug.Log("Word was completed correctly");
-                            if (CheckGameCompletion())
+                            foreach(Tassello tassello2 in wordObject.tasselli)
+                                SetTasselloColor(tassello2, Color.green, false);
+                            if (LevelCompleted)
                             {
                                 Debug.Log("GAME HAS ENDED!!!!!");
+                                GameCompletion();
                             }
                             else
                             {
@@ -263,12 +280,35 @@ namespace Crossword{
             return null;
         }
 
-        public bool CheckGameCompletion()
+        private void GameCompletion()
         {
-            foreach (WordObject wordObject in wordObjects)
-                if(!wordObject.Completed)
-                    return false;
-            return true;
+            currentSelectedTassello = null;
+            currentSelectedWordObject = null;
+            pamparapiText.text = "GGWP";
+        }
+
+        public void CallLetterInsert(int asciiCode)
+        {
+            //gli acsii per le lettere maiuscole dalla A alla Z sono da 65 a 90
+            AddLetter(currentSelectedTassello, (char)asciiCode);
+        }
+
+        public void CallLetterRemoval()
+        {
+            RemoveLetter();
+        }
+
+        private void SetTasselloColor(Tassello tassello, Color color, bool checkForParentCompletion = true)
+        {
+            if (checkForParentCompletion)
+            {
+                foreach (WordObject parent in tassello.wordObjectParents)
+                    if (parent != null)
+                        if (parent.Completed)
+                            return;
+            }
+            
+            tassello.GetComponent<Image>().color = color;
         }
 
         #endregion
