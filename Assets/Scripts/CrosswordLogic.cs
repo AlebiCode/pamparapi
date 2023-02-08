@@ -7,6 +7,14 @@ namespace Crossword
 {
     public class CrosswordLogic : MonoBehaviour
     {
+        //COSTANTI
+        private static Color
+            standardColor = Color.white,
+            wordSelectionColor = Color.cyan,
+            tasselloSelectionColor = Color.yellow,
+            startingLetterColor = Color.grey,
+            correctWordColor = Color.green;
+
         //VARIABILI
         private static CrosswordLogic instance;
 
@@ -31,13 +39,13 @@ namespace Crossword
                 if (currentSelectedWordObject != null)
                     if(!currentSelectedWordObject.Completed)
                         foreach (Tassello tassello in currentSelectedWordObject.tasselli)
-                            SetTasselloColor(tassello, Color.white);
+                            SetTasselloColor(tassello, standardColor);
 
                 currentSelectedWordObject = value;
 
                 if(currentSelectedWordObject != null)
                     foreach (Tassello tassello in currentSelectedWordObject.tasselli)
-                        SetTasselloColor(tassello, Color.cyan);
+                        SetTasselloColor(tassello, wordSelectionColor);
 
                 //------debug
                 if(currentSelectedWordObject != null)
@@ -51,12 +59,12 @@ namespace Crossword
             {
                 if (CurrentSelectedTassello)
                     if(CurrentSelectedTassello.wordObjectParents[0] == currentSelectedWordObject || CurrentSelectedTassello.wordObjectParents[1] == currentSelectedWordObject)
-                        SetTasselloColor(currentSelectedTassello, Color.cyan);
+                        SetTasselloColor(currentSelectedTassello, wordSelectionColor);
                     else
-                        SetTasselloColor(currentSelectedTassello, Color.white);
+                        SetTasselloColor(currentSelectedTassello, standardColor);
                 currentSelectedTassello = value;
                 if (CurrentSelectedTassello)
-                    SetTasselloColor(currentSelectedTassello, Color.yellow);
+                    SetTasselloColor(currentSelectedTassello, tasselloSelectionColor);
             }
             get { return currentSelectedTassello; }
         }
@@ -118,6 +126,8 @@ namespace Crossword
                 wordObjects.Add(newWordobject);
                 AddTasselliToGameWord(newWordobject, tasselloSize, offSet, insertions);
             }
+
+            PlaceStartingLetters();
         }
 
         private void ResetValuesAndGameBoard()
@@ -128,7 +138,7 @@ namespace Crossword
             foreach (Transform child in crosswordParent.GetComponentInChildren<Transform>())
                 Destroy(child.gameObject);
 
-            pamparapiText.text = "Loser";
+            pamparapiText.text = "Maybe you should try getting a job";
         }
 
         //NON MI PIACE COME CONTROLLA SE E' GIA STATO PIAZZATO UN TASSELLO, MA FUNZIONA COMUNQUE LOL
@@ -169,6 +179,22 @@ namespace Crossword
             }
         }
 
+        /// <summary>
+        /// Piazza (idealmente) una lettera per parola. Come è scritto male LOL!!
+        /// </summary>
+        private void PlaceStartingLetters()
+        {
+            foreach (WordObject wordObject in wordObjects)
+            {
+                int placement = Random.Range(0, wordObject.GetWordInfo.word.Length);
+                if (wordObject.tasselli[placement].locked)
+                    placement = FindNextFreeTasselloIndex(wordObject);
+                wordObject.tasselli[placement].SetLettera(wordObject.GetWordInfo.word[placement]);
+                wordObject.tasselli[placement].locked = true;
+                SetTasselloColor(wordObject.tasselli[placement], startingLetterColor, false);
+            }
+        }
+
         public void OnWordSelection(WordObject wordObject)
         {
            if (!wordObject.Completed)
@@ -179,7 +205,11 @@ namespace Crossword
                     CurrentSelectedTassello = wordObject.tasselli[wordObject.tasselli.Length-1];
             }
         }
-
+        /// <summary>
+        /// Trova prossimo tassello
+        /// </summary>
+        /// <param name="wordObject">wordobject in cui cercare il tassello</param>
+        /// <returns></returns>
         private Tassello FindNextFreeTassello(WordObject wordObject)
         {
             foreach (Tassello tassello in wordObject.tasselli)
@@ -190,18 +220,15 @@ namespace Crossword
             return null;
         }
 
-        /// <summary>
-        /// Called when a tassello is pressed
-        /// </summary>
-        /// <param name="lettera"></param>
-        /*public void OnTasselloPress(char lettera)
+        private int FindNextFreeTasselloIndex(WordObject wordObject)
         {
-            if (CurrentSelectedTassello)
+            for(int i = 0; i < wordObject.tasselli.Length; i++)
             {
-                AddLetter(CurrentSelectedTassello, lettera);
-                CurrentSelectedTassello = FindNextFreeTassello(CurrentSelectedWordObject);
+                if (wordObject.tasselli[i].Lettera == ' ')
+                    return i;
             }
-        }*/
+            return -1;
+        }
 
         public void OnBackSpacePress()
         {
@@ -212,6 +239,7 @@ namespace Crossword
         {
             if (tassello)
             {
+                Debug.Log("AddLetter called " + tassello.wordObjectParents[0] + tassello.wordObjectParents[1]);
                 tassello.SetLettera(lettera);
                 foreach (WordObject wordObject in tassello.wordObjectParents)
                     if(wordObject != null) {
@@ -219,7 +247,7 @@ namespace Crossword
                         {
                             Debug.Log("Word was completed correctly");
                             foreach(Tassello tassello2 in wordObject.tasselli)
-                                SetTasselloColor(tassello2, Color.green, false);
+                                SetTasselloColor(tassello2, correctWordColor, false);
                             if (LevelCompleted)
                             {
                                 Debug.Log("GAME HAS ENDED!!!!!");
@@ -231,7 +259,7 @@ namespace Crossword
                                 CurrentSelectedTassello = FindNextFreeTassello(CurrentSelectedWordObject);
                             }
                         }
-                        else
+                        else if (wordObject == currentSelectedWordObject)
                         {
                             //cambio solo se c'è un altro tassello libero (ovvero non era l'ultima lettera che ho inserito)
                             Tassello nextFreeTassello = FindNextFreeTassello(CurrentSelectedWordObject);
@@ -241,6 +269,7 @@ namespace Crossword
                             {
                                 //Comportamento "hai riempito la parola ma è scorretta"
                                 //METTI QUALCHE ANIMAZIONCINA!
+                                Debug.Log("La lettera è sbagliata!!");
                                 CurrentSelectedTassello.SetLettera(' ');
                             }
                         }
@@ -250,25 +279,14 @@ namespace Crossword
 
         private void RemoveLetter()
         {
-            bool selectionTasselloWasReached = false;
             for (int i = currentSelectedWordObject.tasselli.Length - 1; i >= 0; i--)
             {
-                if (selectionTasselloWasReached)
+                if (currentSelectedWordObject.tasselli[i].Lettera != ' ' && !currentSelectedWordObject.tasselli[i].locked)
                 {
-                    bool valid = true;
-                    foreach (WordObject parent in currentSelectedWordObject.tasselli[i].wordObjectParents)
-                        if (parent != null)
-                            if (parent.Completed)
-                                valid = false;
-                    if (valid)
-                    {
-                        CurrentSelectedTassello = currentSelectedWordObject.tasselli[i];
-                        CurrentSelectedTassello.SetLettera(' ');
-                        break;
-                    }
+                    currentSelectedWordObject.tasselli[i].SetLettera(' ');
+                    CurrentSelectedTassello = FindNextFreeTassello(currentSelectedWordObject);
+                    break;
                 }
-                else if (currentSelectedWordObject.tasselli[i] == currentSelectedTassello)
-                    selectionTasselloWasReached = true;
             }
         }
 
@@ -298,16 +316,10 @@ namespace Crossword
             RemoveLetter();
         }
 
-        private void SetTasselloColor(Tassello tassello, Color color, bool checkForParentCompletion = true)
+        private void SetTasselloColor(Tassello tassello, Color color, bool checkIfLocked = true)
         {
-            if (checkForParentCompletion)
-            {
-                foreach (WordObject parent in tassello.wordObjectParents)
-                    if (parent != null)
-                        if (parent.Completed)
-                            return;
-            }
-            
+            if (checkIfLocked && tassello.locked)
+               return;
             tassello.GetComponent<Image>().color = color;
         }
 

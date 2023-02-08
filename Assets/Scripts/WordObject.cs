@@ -14,7 +14,11 @@ namespace Crossword
         private bool completed = false;
 
         public bool Completed{
-            set { completed = value; }
+            set {
+                completed = value;
+                foreach(Tassello t in tasselli)
+                    t.locked = true;
+            }
             get { return completed; }
         }
         //public Tassello[] Tasselli => tasselli;
@@ -25,7 +29,7 @@ namespace Crossword
         public WordObject(WordInfo wordInfo)
         {
             this.wordInfo = wordInfo;
-            this.wordInfo.word = this.wordInfo.word.ToUpper();
+            this.wordInfo.word = wordInfo.word.ToUpper();
             tasselli = new Tassello[wordInfo.word.Length];
         }
 
@@ -39,6 +43,7 @@ namespace Crossword
             {
                 Completed = true;
             }
+            Debug.Log("<" + currentString + "> <" + wordInfo.word + ">");
             return Completed;
         }
 

@@ -8,6 +8,7 @@ namespace Crossword {
     {
         public WordObject[] wordObjectParents = new WordObject[2];
         [SerializeField] private Text lettera;
+        public bool locked;
 
         public char Lettera => lettera.text[0];
 
