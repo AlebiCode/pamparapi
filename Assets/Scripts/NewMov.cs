@@ -30,7 +30,6 @@ public class NewMov : MonoBehaviour
         if (Input.touchCount == 1)
         {
             Touch touch = Input.GetTouch(0);
-
             switch (touch.phase)
             {
                 case TouchPhase.Began:
