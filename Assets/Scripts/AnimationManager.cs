@@ -37,19 +37,19 @@ namespace NS_animation
                     switch (statoOcchi)
                     { 
                         case EyesStates.open:
-                            moveTarget = (new Vector3(0.067f, .03f, 0), new Vector3(0.211f, .03f, 0));
+                            moveTarget = (new Vector3(0.202f, 0.16f, 0), new Vector3(0.391f, 0.16f, 0));
                             rotTarget = (new Vector3(0, 0, 0), new Vector3(0, 0, 0));
                             break;
                         case EyesStates.closed:
-                            moveTarget = (new Vector3(0.067f, -.01f, 0), new Vector3(0.211f, -.01f, 0));
+                            moveTarget = (new Vector3(0.202f, 0.11f, 0), new Vector3(0.391f, 0.11f, 0));
                             rotTarget = (new Vector3(0, 0, 0), new Vector3(0, 0, 0));
                             break;
                         case EyesStates.angry:
-                            moveTarget = (new Vector3(0.08f, .03f, 0), new Vector3(0.2f, .03f, 0));
+                            moveTarget = (new Vector3(0.202f, 0.13f, 0), new Vector3(0.391f, 0.13f, 0));
                             rotTarget = (new Vector3(0, 0, -30), new Vector3(0, 0, 30));
                             break;
                         case EyesStates.sad:
-                            moveTarget = (new Vector3(0.05f, .03f, 0), new Vector3(0.22f, .03f, 0));
+                            moveTarget = (new Vector3(0.202f, 0.13f, 0), new Vector3(0.391f, 0.13f, 0));
                             rotTarget = (new Vector3(0, 0, 30), new Vector3(0, 0, -30));
                             break;
                     }
