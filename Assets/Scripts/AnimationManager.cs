@@ -10,6 +10,7 @@ namespace NS_animation
     {
         [SerializeField] private Animator animator;
 
+        [SerializeField] private GameObject pamparapi;
         [SerializeField] private GameObject leftEyelid, rightEyelid;
         private (Tween, Tween) moveTween, rotateTween;
 
@@ -95,10 +96,41 @@ namespace NS_animation
         {
             if (Input.touchCount > 0)
             {
-                StatoOcchi = (EyesStates)((int)statoOcchi + 1);
-                if (statoOcchi == EyesStates.ENUM_LENGHT)
-                    StatoOcchi = 0;
+                if (Input.GetTouch(0).phase == TouchPhase.Began)
+                {
+                    StatoOcchi = (EyesStates)((int)statoOcchi + 1);
+                    if (statoOcchi == EyesStates.ENUM_LENGHT)
+                        StatoOcchi = 0;
+                }
             }
+        }
+
+        public void MoveToCrosswordScreen()
+        {
+            StartCoroutine(MoveFromMainToCrosswordScreenCoroutine());
+        }
+
+        public void MoveToMainScreen()
+        {
+            StartCoroutine(MoveFromCrosswordToMainScreenCoroutine());
+        }
+
+        private IEnumerator MoveFromMainToCrosswordScreenCoroutine()
+        {
+            pamparapi.transform.DOMove(UiManager.instance.PamparapiStartingCrosswordPosition.position, 0.4f);
+            pamparapi.transform.DOScale(0.8f, 0.4f);
+            yield return new WaitForSeconds(0.4f);
+            UiManager.instance.Canvas.sortingOrder = -10;
+            pamparapi.transform.DOMove(UiManager.instance.PamparapiEndingCrosswordPosition.position, 0.4f);
+        }
+        private IEnumerator MoveFromCrosswordToMainScreenCoroutine()
+        {
+            pamparapi.transform.DOScale(0.8f, 0.4f);
+
+            pamparapi.transform.DOMove(new Vector3(-.8f, 1, 0), 0.2f).SetEase(Ease.OutExpo);
+            yield return new WaitForSeconds(0.2f);
+            UiManager.instance.Canvas.sortingOrder = 10;
+            pamparapi.transform.DOMove(Vector3.zero, 0.2f).SetEase(Ease.InExpo);
         }
 
         public enum EyesStates
