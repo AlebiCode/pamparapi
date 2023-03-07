@@ -15,10 +15,7 @@ public class NewMov : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        if (Application.platform == RuntimePlatform.Android)
-            Application.targetFrameRate = 120;
-        else
-            Application.targetFrameRate = 120;
+
     }
 
     // Update is called once per frame

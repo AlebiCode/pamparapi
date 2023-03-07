@@ -303,6 +303,8 @@ namespace Crossword
             currentSelectedTassello = null;
             currentSelectedWordObject = null;
             pamparapiText.text = "GGWP";
+
+            GameManager.instance.SoftCurrency += 100;
         }
 
         public void CallLetterInsert(int asciiCode)

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using UnityEngine.Rendering;
 
 namespace NS_animation
 {
@@ -11,6 +12,7 @@ namespace NS_animation
         [SerializeField] private Animator animator;
 
         [SerializeField] private GameObject pamparapi;
+        [SerializeField] private SortingGroup pamparapiSortingGroup;
         [SerializeField] private GameObject leftEyelid, rightEyelid;
         private (Tween, Tween) moveTween, rotateTween;
 
@@ -120,7 +122,8 @@ namespace NS_animation
             pamparapi.transform.DOMove(UiManager.instance.PamparapiStartingCrosswordPosition.position, 0.4f);
             pamparapi.transform.DOScale(0.8f, 0.4f);
             yield return new WaitForSeconds(0.4f);
-            UiManager.instance.Canvas.sortingOrder = -10;
+            //UiManager.instance.Canvas.sortingOrder = -100;
+            pamparapiSortingGroup.sortingOrder = 51;
             pamparapi.transform.DOMove(UiManager.instance.PamparapiEndingCrosswordPosition.position, 0.4f);
         }
         private IEnumerator MoveFromCrosswordToMainScreenCoroutine()
@@ -129,7 +132,8 @@ namespace NS_animation
 
             pamparapi.transform.DOMove(new Vector3(-.8f, 1, 0), 0.2f).SetEase(Ease.OutExpo);
             yield return new WaitForSeconds(0.2f);
-            UiManager.instance.Canvas.sortingOrder = 10;
+            //UiManager.instance.Canvas.sortingOrder = 100;
+            pamparapiSortingGroup.sortingOrder = 0;
             pamparapi.transform.DOMove(Vector3.zero, 0.2f).SetEase(Ease.InExpo);
         }
 
