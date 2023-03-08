@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Equipement : MonoBehaviour
 {
@@ -11,6 +12,9 @@ public class Equipement : MonoBehaviour
 
     [SerializeField] private Transform buttonsParent;
     [SerializeField] private Transform buttonsSeparator;
+
+    [SerializeField] private GameObject ConfirmPurchaseWindow;
+    private EquipementButton ConfirmPurchaseWindow_TargetButton;
 
     //-------------------------------------------------
 
@@ -37,6 +41,11 @@ public class Equipement : MonoBehaviour
         return ((1 << item.ItemID) & ownedItems[(int)item.EquipSlot]) != 0;
     }
 
+    bool IsItemEquipped(Item item)
+    {
+        return item == equipementSlots[(int)item.EquipSlot].item;
+    }
+
     #endregion
 
     #region INIT
@@ -51,20 +60,10 @@ public class Equipement : MonoBehaviour
     private void InitializeButtons()
     {
         //creo un array contenente tutti i bottoni (escluso il buttonsSeparator!)
-        EquipementButton[] buttons = new EquipementButton[buttonsParent.childCount - 1];
-        int i = 0;
-        while(i < buttonsParent.childCount - 1)
-        {
-            EquipementButton temp = buttonsParent.GetChild(i).GetComponent<EquipementButton>();
-            if (temp)
-            {
-                buttons[i] = temp;
-                i++;
-            }
-        }
+        EquipementButton[] buttons = buttonsParent.GetComponentsInChildren<EquipementButton>();
 
         //Controllo se gli oggetti sono posseduti o meno
-        for (i=0; i < buttons.Length; i++)
+        for (int i=0; i < buttons.Length; i++)
         {
             if (IsItemOwned(buttons[i].Item))
             {
@@ -111,25 +110,97 @@ public class Equipement : MonoBehaviour
         }
     }
 
-    #endregion
-
-    #region SHOP LOGIC
-
-    void AddItemToOwned(EquipementButton equipButton)
+    public void UnequipItem(Item item)
     {
-        if (!IsItemOwned(equipButton.Item))
+        if (IsItemEquipped(item))
         {
-            ownedItems[(int)equipButton.Item.EquipSlot] += (1 << equipButton.Item.ItemID);
-            SetButtonAsOwned(equipButton);
+            foreach (EquipementTypeEnum equipType in item.OverrideSlots)
+            {
+                equipementSlots[(int)equipType].spriteRenderer.enabled = true;
+            }
+            equipementSlots[(int)item.EquipSlot].spriteRenderer.enabled = false;
+            equipementSlots[(int)item.EquipSlot].spriteRenderer.sprite = null;
+
+            equipementSlots[(int)item.EquipSlot].item = null;
         }
     }
 
     #endregion
 
+    #region SHOP LOGIC
+
+    void AddItemToOwned(Item item)
+    {
+        if (!IsItemOwned(item))
+        {
+            ownedItems[(int)item.EquipSlot] += (1 << item.ItemID);
+        }
+    }
+
+    #endregion
+
+    #region INTERACTION LOGIC
+
+    public void ItemButtonPress(EquipementButton equipementButton)
+    {
+        if (IsItemOwned(equipementButton.Item))
+        {
+            //possiedo questo oggetto
+            if (IsItemEquipped(equipementButton.Item))
+            {
+                //unequip item
+                UnequipItem(equipementButton.Item.EquipSlot);
+                SetButtonEquippedGraphic(equipementButton, false);
+            }
+            else
+            {
+                //equip item
+                EquipItem(equipementButton.Item);
+                SetButtonEquippedGraphic(equipementButton, true);
+            }
+        }
+        else
+        {
+            //non possiedo questo oggetto. Vuoi comprarlo?
+            ConfirmPurchaseWindow_TargetButton = equipementButton;
+            ConfirmPurchaseWindow.SetActive(true);
+        }
+    }
+
+    public void ConfirmPurchaseButton()
+    {
+        AddItemToOwned(ConfirmPurchaseWindow_TargetButton.Item);
+        SetButtonAsOwned(ConfirmPurchaseWindow_TargetButton);
+        ConfirmPurchaseWindow_TargetButton = null;
+    }
+
+    #endregion
+
+    #region UI LOGIC
+
     void SetButtonAsOwned(EquipementButton equipButton)
     {
         equipButton.transform.SetSiblingIndex(buttonsSeparator.GetSiblingIndex());
+
+        equipButton.GetComponent<Image>().color = Color.yellow;
     }
+
+    void SetButtonEquippedGraphic(EquipementButton equipButton, bool isEquipped)
+    {
+        //setta l'estetica. E' IMPLICITO CHE QUESTA OPERAZIONE VIENE EFFETTUATA SU UN BOTTONE DI UN OGGETTO CHE POSSIEDO.
+        if (isEquipped)
+        {
+            //l'oggetto è equipaggiato
+            equipButton.GetComponent<Image>().color = Color.green;
+        }
+        else
+        {
+            //l'oggetto non è equipaggiato
+            equipButton.GetComponent<Image>().color = Color.yellow;
+        }
+    }
+
+    #endregion
 
     //-------------------------------
 
@@ -143,8 +214,8 @@ public class Equipement : MonoBehaviour
 
 public enum EquipementTypeEnum
 {
-    GLASSES,
     HAT,
+    GLASSES,
 
     ENUM_LENGHT
 }

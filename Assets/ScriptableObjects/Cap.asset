@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Cap
   m_EditorClassIdentifier: 
   itemID: 1
-  equipSlot: 1
+  equipSlot: 0
   overrideSlots: 
   cost: 0
   sprite: {fileID: 21300000, guid: f148768462cecb74c9070fedf519a9dd, type: 3}

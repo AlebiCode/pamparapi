@@ -49,9 +49,10 @@ namespace Crossword
             string debugString = "";
             foreach (WordInfo w in generationInfo.wordInfoList)
                 debugString += ("<" + w.word + "> ");
-            Debug.Log(debugString + "\nCi sono stati " + generationInfo.wordInfoList.Count + " inserimenti riusciti.\nCi sono stati " + failedWords.Count + " inserimenti falliti\n\t");
-            Debug.Log("Massimi e minimi, x e poi y: " + generationInfo.xMax + " " + generationInfo.xMin + " " + generationInfo.yMax + " " + generationInfo.yMin);
-            PrintMatrixFromList();
+            debugString += "\nCi sono stati " + generationInfo.wordInfoList.Count + " inserimenti riusciti.\nCi sono stati " + failedWords.Count + " inserimenti falliti\n";
+            debugString += "x Massimi e minimi: " + generationInfo.xMax + "," + generationInfo.xMin + "\ty Massimi e minimi: " + generationInfo.yMax + "," + generationInfo.yMin + "\n\n";
+            Debug.Log(debugString);
+            //PrintMatrixFromList();
             //--------END-DEBUGGING--------
             return generationInfo;
         }
@@ -75,7 +76,7 @@ namespace Crossword
             }
             catch
             {
-                Debug.LogError("File json non trovato, o non leggibile. Controllare presenza e corretteza del file al percorso " + JSON_PATH);
+                Debug.LogWarning("File json non trovato, o non leggibile. Controllare presenza e corretteza del file al percorso " + JSON_PATH);
             }
         }
 
@@ -107,7 +108,7 @@ namespace Crossword
                     id = Random.Range(0, dictionary.Length);
                     if (dictionary.Length <= usedDictionaryIDs.Count)
                     {
-                        Debug.LogError("!! !! !! !! Il dizionario non contiene abbastanza elementi per usare il numero di parole richieste differenti. Questo potrebbe essere stato causato da tentativi falliti prematuri, che potrebbero invece funzionare una volta aggiunte più parole.");
+                        Debug.LogWarning("!! !! !! !! Il dizionario non contiene abbastanza elementi per usare il numero di parole richieste differenti. Questo potrebbe essere stato causato da tentativi falliti prematuri, che potrebbero invece funzionare una volta aggiunte più parole.");
                         TARGET_NUMBER_OF_WORDS = generationInfo.wordInfoList.Count;
                         return;
                     }
