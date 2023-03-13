@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b3d042c2eff953c49a908690ffb75338, type: 3}
-  m_Name: Cap
+  m_Name: Glasses
   m_EditorClassIdentifier: 
-  itemID: 1
-  equipSlot: 0
+  itemID: 2
+  equipSlot: 1
   overrideSlots: 
-  cost: 0
-  sprite: {fileID: 21300000, guid: f148768462cecb74c9070fedf519a9dd, type: 3}
+  cost: 250
+  sprite: {fileID: 21300000, guid: afe660cce1ff50e4bab515a8a5f3131c, type: 3}
