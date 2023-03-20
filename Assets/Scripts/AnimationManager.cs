@@ -14,11 +14,14 @@ namespace NS_animation
         [SerializeField] private GameObject pamparapi;
         [SerializeField] private SortingGroup pamparapiSortingGroup;
         [SerializeField] private GameObject leftEyelid, rightEyelid;
-        private (Tween, Tween) moveTween, rotateTween;
+        private (Tween, Tween) lidMoveTween, lidRotateTween;
 
         public EyesStates statoOcchi = EyesStates.ENUM_LENGHT;
         [SerializeField] private float eyesMovementTime;
         [SerializeField] private float eyesRotationTime;
+
+        [SerializeField] Transform pamparapiStartingCrosswordPosition;
+        [SerializeField] Transform pamparapiEndingCrosswordPosition;
 
         //----------------------------------------------------------
         private EyesStates StatoOcchi
@@ -30,10 +33,10 @@ namespace NS_animation
                 {
                     statoOcchi = value;
 
-                    moveTween.Item1.Kill();
-                    moveTween.Item2.Kill();
-                    rotateTween.Item1.Kill();
-                    rotateTween.Item2.Kill();
+                    lidMoveTween.Item1.Kill();
+                    lidMoveTween.Item2.Kill();
+                    lidRotateTween.Item1.Kill();
+                    lidRotateTween.Item2.Kill();
                     (Vector3, Vector3) moveTarget = (new Vector3(), new Vector3());
                     (Vector3, Vector3) rotTarget = (new Vector3(), new Vector3());
                     switch (statoOcchi)
@@ -55,10 +58,10 @@ namespace NS_animation
                             rotTarget = (new Vector3(0, 0, 30), new Vector3(0, 0, -30));
                             break;
                     }
-                    moveTween.Item1 = leftEyelid.transform.DOLocalMove(moveTarget.Item1, eyesMovementTime);
-                    moveTween.Item2 = rightEyelid.transform.DOLocalMove(moveTarget.Item2, eyesMovementTime);
-                    rotateTween.Item1 = leftEyelid.transform.DOLocalRotate(rotTarget.Item1, eyesRotationTime);
-                    rotateTween.Item2 = rightEyelid.transform.DOLocalRotate(rotTarget.Item2, eyesRotationTime);
+                    lidMoveTween.Item1 = leftEyelid.transform.DOLocalMove(moveTarget.Item1, eyesMovementTime);
+                    lidMoveTween.Item2 = rightEyelid.transform.DOLocalMove(moveTarget.Item2, eyesMovementTime);
+                    lidRotateTween.Item1 = leftEyelid.transform.DOLocalRotate(rotTarget.Item1, eyesRotationTime);
+                    lidRotateTween.Item2 = rightEyelid.transform.DOLocalRotate(rotTarget.Item2, eyesRotationTime);
                     /*if(moveEyelids != null)
                        StopCoroutine(moveEyelids); 
                     moveEyelids = StartCoroutine(MoveEyelids(eyeLidstargetPosRot));*/
@@ -119,16 +122,16 @@ namespace NS_animation
 
         private IEnumerator MoveFromMainToCrosswordScreenCoroutine()
         {
-            pamparapi.transform.DOMove(UiManager.instance.PamparapiStartingCrosswordPosition.position, 0.4f);
+            pamparapi.transform.DOMove(pamparapiStartingCrosswordPosition.position, 0.4f);
             pamparapi.transform.DOScale(0.8f, 0.4f);
             yield return new WaitForSeconds(0.4f);
             //UiManager.instance.Canvas.sortingOrder = -100;
             pamparapiSortingGroup.sortingOrder = 51;
-            pamparapi.transform.DOMove(UiManager.instance.PamparapiEndingCrosswordPosition.position, 0.4f);
+            pamparapi.transform.DOMove(pamparapiEndingCrosswordPosition.position, 0.4f);
         }
         private IEnumerator MoveFromCrosswordToMainScreenCoroutine()
         {
-            pamparapi.transform.DOScale(0.8f, 0.4f);
+            pamparapi.transform.DOScale(1f, 0.4f).SetEase(Ease.OutCirc);
 
             pamparapi.transform.DOMove(new Vector3(-.8f, 1, 0), 0.2f).SetEase(Ease.OutExpo);
             yield return new WaitForSeconds(0.2f);

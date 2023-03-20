@@ -5,7 +5,7 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "ItemName", menuName = "ScriptableObjects/Equippable Item", order = 1)]
 public class Item : ScriptableObject
 {
-    [SerializeField] int itemID;
+    [Range(0, 31)] [SerializeField] int itemID;
     [SerializeField] EquipementTypeEnum equipSlot;
     [SerializeField] List<EquipementTypeEnum> overrideSlots = new List<EquipementTypeEnum>();
     [SerializeField] float cost;

@@ -305,6 +305,7 @@ namespace Crossword
             pamparapiText.text = "GGWP";
 
             GameManager.instance.SoftCurrency += 100;
+            GameManager.instance.Fullness = Mathf.Max(GameManager.instance.Fullness - 0.1f, 0);
         }
 
         public void CallLetterInsert(int asciiCode)

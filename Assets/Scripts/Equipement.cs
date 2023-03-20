@@ -8,7 +8,6 @@ public class Equipement : MonoBehaviour
 {
     public static Equipement instance;
 
-    private int[] ownedItems;
     public EquipementSlot[] equipementSlots = new EquipementSlot[(int)EquipementTypeEnum.ENUM_LENGHT];
 
     [SerializeField] private EquipementButton buttonPrefab;
@@ -21,6 +20,8 @@ public class Equipement : MonoBehaviour
 
     //-------------------------------------------------
 
+    int[] OwnedItems => GameManager.instance.MyInventory.ownedItems;
+
     //-------------------------------------------------
 
     #region UnityMethods
@@ -31,7 +32,7 @@ public class Equipement : MonoBehaviour
     }
     private void Start()
     {
-        InitializeInventory();
+        //InitializeInventory();
         InitializeButtons();
     }
 
@@ -41,14 +42,14 @@ public class Equipement : MonoBehaviour
 
     bool IsItemOwned(Item item)
     {
-        return ((1 << item.ItemID) & ownedItems[(int)item.EquipSlot]) != 0;
+        return ((1 << item.ItemID) & OwnedItems[(int)item.EquipSlot]) != 0;
     }
 
     int CountItemsOwnedOfType(EquipementTypeEnum slot)
     {
         int output = 0;
         for (int i = 0; i < sizeof(int); i++)
-            if (((1 << i) & ownedItems[(int)slot]) != 0)
+            if (((1 << i) & OwnedItems[(int)slot]) != 0)
                 output++;
         return output;
     }
@@ -60,7 +61,7 @@ public class Equipement : MonoBehaviour
         int output = 0;
         for (int i = 0; i < item.ItemID; i++)
         {
-            if (((1 << i) & ownedItems[(int)item.EquipSlot]) != 0)
+            if (((1 << i) & OwnedItems[(int)item.EquipSlot]) != 0)
                 output++;
         }
         return output;
@@ -74,14 +75,16 @@ public class Equipement : MonoBehaviour
     #endregion
 
     #region INIT
-
+    /*
     void InitializeInventory()
     {
         //Inizializza
-        ownedItems = new int[(int)EquipementTypeEnum.ENUM_LENGHT];
+        GameManager.instance.MyInventory = new int[(int)EquipementTypeEnum.ENUM_LENGHT];
+        for(int i =0 ; i<ownedItems.Length; i++)
+            ownedItems[i]= 0;
         //Load here!!!
         //FIX!!!
-    }
+    }*/
     private void InitializeButtons()
     {
         Item[] allItems = GetButtonsInfoFromScriptables();
@@ -173,7 +176,8 @@ public class Equipement : MonoBehaviour
     {
         if (!IsItemOwned(item))
         {
-            ownedItems[(int)item.EquipSlot] += (1 << item.ItemID);
+            OwnedItems[(int)item.EquipSlot] += (1 << item.ItemID);
+            GameManager.SaveInventoryToJson(GameManager.instance.MyInventory);
         }
     }
 
@@ -203,13 +207,21 @@ public class Equipement : MonoBehaviour
         else
         {
             //non possiedo questo oggetto. Vuoi comprarlo?
-            ConfirmPurchaseWindow_TargetButton = equipementButton;
-            ConfirmPurchaseWindow.SetActive(true);
+            if (equipementButton.Item.Cost <= GameManager.instance.SoftCurrency)
+            {
+                ConfirmPurchaseWindow_TargetButton = equipementButton;
+                ConfirmPurchaseWindow.SetActive(true);
+            }
+            else
+            {
+                Debug.Log("Non hai abbastanza denaro!");
+            }
         }
     }
 
     public void ConfirmPurchaseButton()
     {
+        GameManager.instance.SoftCurrency -= ConfirmPurchaseWindow_TargetButton.Item.Cost;
         AddItemToOwned(ConfirmPurchaseWindow_TargetButton.Item);
         SetButtonAsOwned(ConfirmPurchaseWindow_TargetButton);
         ConfirmPurchaseWindow_TargetButton = null;
@@ -227,7 +239,6 @@ public class Equipement : MonoBehaviour
         equipButton.SetItemGraphicAsOwned();
     }
 
-    
 
     #endregion
 
@@ -240,6 +251,8 @@ public class Equipement : MonoBehaviour
         public SpriteRenderer spriteRenderer;
     }
 }
+
+
 
 public enum EquipementTypeEnum
 {
