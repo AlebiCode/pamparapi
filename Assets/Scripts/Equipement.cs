@@ -177,7 +177,7 @@ public class Equipement : MonoBehaviour
         if (!IsItemOwned(item))
         {
             OwnedItems[(int)item.EquipSlot] += (1 << item.ItemID);
-            GameManager.SaveInventoryToJson(GameManager.instance.MyInventory);
+            GameManager.instance.SaveDataToJson();
         }
     }
 

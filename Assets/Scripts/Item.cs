@@ -8,13 +8,13 @@ public class Item : ScriptableObject
     [Range(0, 31)] [SerializeField] int itemID;
     [SerializeField] EquipementTypeEnum equipSlot;
     [SerializeField] List<EquipementTypeEnum> overrideSlots = new List<EquipementTypeEnum>();
-    [SerializeField] float cost;
+    [SerializeField] int cost;
     [SerializeField] Sprite sprite;
 
     public int ItemID => itemID;
     public EquipementTypeEnum EquipSlot => equipSlot;
     public List<EquipementTypeEnum> OverrideSlots => overrideSlots;
-    public float Cost => cost;
+    public int Cost => cost;
     public Sprite Sprite => sprite;
 
 }

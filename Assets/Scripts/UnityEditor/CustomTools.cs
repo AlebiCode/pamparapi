@@ -5,31 +5,35 @@ using UnityEditor;
 
 public class CustomTools :  EditorWindow
 {
-    [MenuItem("CustomTools/Data/OwnedItems/ResetOwnedItems")]
-    public static void ResetInventory()
+    [MenuItem("CustomTools/Data/ResetSaveFile")]
+
+    public static void ResetSaveFile()
     {
         if (Application.isPlaying)
         {
             GameManager.instance.MyInventory.ownedItems = new int[(int)EquipementTypeEnum.ENUM_LENGHT];
-            GameManager.SaveInventoryToJson(GameManager.instance.MyInventory);
+            GameManager.instance.Fullness = GameManager.instance.Love = GameManager.instance.Hygene = 0;
+            GameManager.instance.SaveDataToJson();
         }
         else
-            GameManager.SaveInventoryToJson(new Inventory());
+        {
+            GameManager.ResetData();
+        }
 
     }
-    [MenuItem("CustomTools/Data/OwnedItems/SaveOwnedItems")]
-    public static void SaveOwnedItems()
+    [MenuItem("CustomTools/Data/SaveData")]
+    public static void SaveData()
     {
         if (Application.isPlaying)
-            GameManager.SaveInventoryToJson(GameManager.instance.MyInventory);
+            GameManager.instance.SaveDataToJson();
         else
             Debug.LogWarning("Game is not running, inventory not initialized!!");
     }
-    [MenuItem("CustomTools/Data/OwnedItems/LoadOwnedItems")]
-    public static void LoadOwnedItems()
+    [MenuItem("CustomTools/Data/LoadData")]
+    public static void LoadData()
     {
         if (Application.isPlaying)
-            GameManager.instance.LoadOwnedItemsFromJson();
+            GameManager.instance.LoadDataFromJson();
         else
             Debug.LogWarning("Game is not running, inventory not initialized!!");
     }
