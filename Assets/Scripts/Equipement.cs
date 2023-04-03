@@ -16,6 +16,7 @@ public class Equipement : MonoBehaviour
     //[SerializeField] private Transform buttonsSeparator;
 
     [SerializeField] private GameObject ConfirmPurchaseWindow;
+    //[SerializeField] private GameObject ShopWindow;
     private EquipementButton ConfirmPurchaseWindow_TargetButton;
 
     //-------------------------------------------------
@@ -32,7 +33,6 @@ public class Equipement : MonoBehaviour
     }
     private void Start()
     {
-        //InitializeInventory();
         InitializeButtons();
     }
 
@@ -75,20 +75,11 @@ public class Equipement : MonoBehaviour
     #endregion
 
     #region INIT
-    /*
-    void InitializeInventory()
-    {
-        //Inizializza
-        GameManager.instance.MyInventory = new int[(int)EquipementTypeEnum.ENUM_LENGHT];
-        for(int i =0 ; i<ownedItems.Length; i++)
-            ownedItems[i]= 0;
-        //Load here!!!
-        //FIX!!!
-    }*/
+
     private void InitializeButtons()
     {
         Item[] allItems = GetButtonsInfoFromScriptables();
-        Debug.Log("I loaded " + allItems.Length + " items!");
+        //Debug.Log("I loaded " + allItems.Length + " items!");
         List<EquipementButton> buttons = new List<EquipementButton>();
         foreach (Item item in allItems)
         {
@@ -103,8 +94,8 @@ public class Equipement : MonoBehaviour
         {
             if (IsItemOwned(buttons[i].Item))
             {
-                Debug.Log("AT START I OWN " + buttons[i].Item.name);
                 //ITEM IS OWNED
+                //Debug.Log("AT START I OWN " + buttons[i].Item.name);
                 //metto il bottone prima del separatore.
                 SetButtonAsOwned(buttons[i]);
             }

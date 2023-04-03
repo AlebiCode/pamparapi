@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3d042c2eff953c49a908690ffb75338, type: 3}
   m_Name: Glasses
   m_EditorClassIdentifier: 
-  itemID: 2
+  itemID: 0
   equipSlot: 1
   overrideSlots: 
   cost: 250

@@ -9,7 +9,8 @@ public class GameManager : MonoBehaviour
     public static GameManager instance;
 
 
-    private const string saveDataPath = "/Json/SaveData.json";
+    private const string savesFolder = "/Saves";
+    private const string saveDataPath = savesFolder + "/SaveData.json";
     [SerializeField] private TMP_Text moneyText;
 
     private Inventory myInventory;
@@ -19,9 +20,9 @@ public class GameManager : MonoBehaviour
 
     //----------------------------------------------------
     public Inventory MyInventory { set { myInventory = value; } get { return myInventory; } }
-    public float Fullness { set { fullness = value; UiManager.instance.UpdateFullnessBar(); } get { return fullness; } }
-    public float Love { set { love = value; UiManager.instance.UpdateLoveBar(); } get { return love; } }
-    public float Hygene { set { hygene = value; UiManager.instance.UpdateHygeneBar(); } get { return hygene; } }
+    public float Fullness { set { fullness = Mathf.Clamp(value, 0, 1); UiManager.instance.updateBars = true; } get { return fullness; } }
+    public float Love { set { love = Mathf.Clamp(value, 0, 1); UiManager.instance.updateBars = true; } get { return love; } }
+    public float Hygene { set { hygene = Mathf.Clamp(value, 0, 1); UiManager.instance.updateBars = true; } get { return hygene; } }
     //----------------------------------------------------
 
     public int SoftCurrency {
@@ -36,7 +37,6 @@ public class GameManager : MonoBehaviour
     {
         if(!instance) instance = this; else Destroy(this);
 
-        LoadDataFromJson();
 
         if (Application.platform == RuntimePlatform.Android)
             Application.targetFrameRate = Screen.currentResolution.refreshRate;
@@ -44,14 +44,26 @@ public class GameManager : MonoBehaviour
             Application.targetFrameRate = 120;
     }
 
+    private void Start()
+    {
+        LoadDataFromJson();
+
+        //Debug.LogWarning("DATA: " + myInventory);
+    }
+
+    void OnApplicationQuit()
+    {
+        SaveDataToJson();
+        Debug.Log("Application ending after " + Time.time + " seconds");
+    }
 
     #region Saving
 
-    public void LoadDataFromJson()
+    public void LoadDataFromJson(bool recursiveParent = true)
     {
         try
         {
-            string path = Application.dataPath + saveDataPath;
+            string path = Application.persistentDataPath + saveDataPath;
             StreamReader reader = new StreamReader(path);
             SaveData saveData = JsonUtility.FromJson<SaveData>(reader.ReadToEnd());
             if (saveData != null)
@@ -64,10 +76,18 @@ public class GameManager : MonoBehaviour
             }
             else
                 throw new System.Exception();
+            reader.Close();
         }
         catch
         {
-            Debug.LogWarning("Could not load save file.");
+            if (recursiveParent)
+            {
+                Debug.LogWarning("Could not load save file. Creating new save file.");
+                ResetData();
+                LoadDataFromJson(false);
+            }
+            else
+                Debug.LogError("Could not create new save file.");
         }
     }
 
@@ -77,8 +97,10 @@ public class GameManager : MonoBehaviour
         saveData.inventory = myInventory;
         saveData.fullness = fullness; saveData.love = love; saveData.hygene = hygene;
         saveData.softCurrency = softCurrency;
+        if (!Directory.Exists(Application.persistentDataPath + savesFolder))
+            Directory.CreateDirectory(Application.persistentDataPath + savesFolder);
         string json = JsonUtility.ToJson(saveData);
-        string path = Application.dataPath + saveDataPath;
+        string path = Application.persistentDataPath + saveDataPath;
         File.WriteAllText(path, json);
     }
 
@@ -86,13 +108,16 @@ public class GameManager : MonoBehaviour
     {
         SaveData saveData = new SaveData();
         saveData.inventory = new Inventory();
+        saveData.fullness = saveData.love = saveData.hygene = 0.5f;
+        saveData.softCurrency = 100;
+        if (!Directory.Exists(Application.persistentDataPath + savesFolder))
+            Directory.CreateDirectory(Application.persistentDataPath + savesFolder);
         string json = JsonUtility.ToJson(saveData);
-        string path = Application.dataPath + saveDataPath;
+        string path = Application.persistentDataPath + saveDataPath;
         File.WriteAllText(path, json);
     }
 
     #endregion
-
 }
 
 [System.Serializable]

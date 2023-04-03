@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using System;
 
 public class UiManager : MonoBehaviour
 {
@@ -12,6 +13,8 @@ public class UiManager : MonoBehaviour
     [SerializeField] RectTransform fullnessBar;
     [SerializeField] RectTransform loveBar;
     [SerializeField] RectTransform hygeneBar;
+
+    public bool updateBars;
 
     [SerializeField] RectTransform crosswordSpritemaskSize;
     [SerializeField] SpriteMask spriteMask;
@@ -36,6 +39,18 @@ public class UiManager : MonoBehaviour
         spriteMask.transform.position = crosswordSpritemaskSize.transform.position;
         spriteMask.transform.localScale = new Vector3(crosswordSpritemaskSize.rect.width, crosswordSpritemaskSize.rect.height, 1);
     }
+
+    private void LateUpdate()
+    {
+        if (updateBars)
+            UpdateBars();
+    }
+
+    private void UpdateBars()
+    {
+        updateBars = false;
+        loveBar.transform.localScale = new Vector3(GameManager.instance.Love, 1, 1);
+    }
     public void SelectShopTab(GameObject tab)
     {
         if(activeShopTab) activeShopTab.SetActive(false);
@@ -43,16 +58,4 @@ public class UiManager : MonoBehaviour
         tab.SetActive(true);
     }
 
-    public void UpdateFullnessBar()
-    {
-        fullnessBar.DOScaleX(GameManager.instance.Fullness/1, .2f);
-    }
-    public void UpdateLoveBar()
-    {
-        loveBar.DOScaleX(GameManager.instance.Love / 1, .2f);
-    }
-    public void UpdateHygeneBar()
-    {
-        hygeneBar.DOScaleX(GameManager.instance.Hygene/1, .2f);
-    }
 }

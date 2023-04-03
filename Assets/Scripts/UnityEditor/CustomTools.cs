@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
+#if UNITY_EDITOR
 public class CustomTools :  EditorWindow
 {
     [MenuItem("CustomTools/Data/ResetSaveFile")]
@@ -38,3 +39,4 @@ public class CustomTools :  EditorWindow
             Debug.LogWarning("Game is not running, inventory not initialized!!");
     }
 }
+#endif
