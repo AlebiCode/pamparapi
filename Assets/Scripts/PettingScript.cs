@@ -5,9 +5,12 @@ using UnityEngine.EventSystems;
 
 public class PettingScript : MonoBehaviour
 {
+    public static float pettingStrenght = 0.2f;
+
     Touch touch = new Touch();
     RaycastHit2D hit = new RaycastHit2D();
-    float pettingTimer;
+
+    private float pettingTimer;
 
     private void Update()
     {
@@ -19,13 +22,13 @@ public class PettingScript : MonoBehaviour
                 switch (touch.phase)
                 {
                     case TouchPhase.Moved:
-                        pettingTimer = 5f;
-                        GameManager.instance.Love += Time.deltaTime;
+                        pettingTimer = .1f;
+                        GameManager.instance.Love += pettingStrenght * Time.deltaTime;
                         break;
                     case TouchPhase.Stationary:
                         if (pettingTimer >= 0)
                         {
-                            GameManager.instance.Love += Time.deltaTime;
+                            GameManager.instance.Love += pettingStrenght * Time.deltaTime;
                             pettingTimer -= Time.deltaTime;
                         }
                         break;
