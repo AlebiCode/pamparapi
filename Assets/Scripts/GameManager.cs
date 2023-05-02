@@ -64,6 +64,7 @@ public class GameManager : MonoBehaviour
         try
         {
             string path = Application.persistentDataPath + saveDataPath;
+            Debug.Log(path);
             StreamReader reader = new StreamReader(path);
             SaveData saveData = JsonUtility.FromJson<SaveData>(reader.ReadToEnd());
             if (saveData != null)

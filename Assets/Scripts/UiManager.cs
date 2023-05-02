@@ -106,6 +106,16 @@ public class UiManager : MonoBehaviour
             loveBar.transform.localScale = Vector3.MoveTowards(loveBar.transform.localScale, new Vector3(GameManager.instance.Love, 1, 1), Time.deltaTime);
             updateBars = true;
         }
+        if (fullnessBar.transform.localScale.x != GameManager.instance.Fullness)
+        {
+            fullnessBar.transform.localScale = Vector3.MoveTowards(fullnessBar.transform.localScale, new Vector3(GameManager.instance.Fullness, 1, 1), Time.deltaTime);
+            updateBars = true;
+        }
+        if (hygeneBar.transform.localScale.x != GameManager.instance.Hygene)
+        {
+            hygeneBar.transform.localScale = Vector3.MoveTowards(hygeneBar.transform.localScale, new Vector3(GameManager.instance.Hygene, 1, 1), Time.deltaTime);
+            updateBars = true;
+        }
     }
 
     public void SelectShopTab(GameObject tab)

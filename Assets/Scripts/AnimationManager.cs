@@ -20,6 +20,7 @@ namespace NS_animation
         [SerializeField] private float eyesMovementTime;
         [SerializeField] private float eyesRotationTime;
 
+        [SerializeField] Transform pamparapiMainScreenPosition;
         [SerializeField] Transform pamparapiStartingCrosswordPosition;
         [SerializeField] Transform pamparapiEndingCrosswordPosition;
 
@@ -73,7 +74,8 @@ namespace NS_animation
 
         private void Start()
         {
-            StatoOcchi = EyesStates.open;     
+            StatoOcchi = EyesStates.open;
+            pamparapi.transform.position = pamparapiMainScreenPosition.position;
         }
 
         void Update()
@@ -137,7 +139,7 @@ namespace NS_animation
             yield return new WaitForSeconds(0.2f);
             //UiManager.instance.Canvas.sortingOrder = 100;
             pamparapiSortingGroup.sortingOrder = 0;
-            pamparapi.transform.DOMove(Vector3.zero, 0.2f).SetEase(Ease.InExpo);
+            pamparapi.transform.DOMove(pamparapiMainScreenPosition.position, 0.2f).SetEase(Ease.InExpo);
         }
 
         public enum EyesStates
