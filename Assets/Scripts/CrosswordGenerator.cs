@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using Newtonsoft.Json;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 
 namespace Crossword
@@ -15,7 +17,7 @@ namespace Crossword
 
         static int iterations;  //contatore iterazioni per trovare una parola inseribile. Viene azzerato se una parola viene trovata.
 
-        static string[] dictionary = null;
+        static string[,] dictionary = null;
 
         static GenerationInfo generationInfo;
 
@@ -23,13 +25,16 @@ namespace Crossword
 
         static List<string> failedWords = new List<string>();
 
+
+        private static int DictionaryLenght => dictionary.GetLength(0);
+
         /// <summary>
         /// Ritorna le informazioni del crossword che genera.
         /// </summary>
         /// <returns></returns>
         public static GenerationInfo GenerateWords()
         {
-            if(dictionary == null)
+            if (dictionary == null)
                 InizializzaDizionario();
 
             InizializzaVariabili();
@@ -56,6 +61,7 @@ namespace Crossword
             //--------END-DEBUGGING--------
             return generationInfo;
         }
+            
 
         private static void InizializzaVariabili()
         {
@@ -71,8 +77,10 @@ namespace Crossword
             try
             {
                 TextAsset jsonFile = Resources.Load<TextAsset>("Dictionaries/TEST");
-                Dictionary dictionaryClass = JsonUtility.FromJson<Dictionary>(jsonFile.ToString());
-                dictionary = dictionaryClass.words;
+                Dizionario cc;//= JsonUtility.FromJson<CoppiaClass>(jsonFile.ToString());
+                cc = JsonConvert.DeserializeObject<Dizionario>(jsonFile.ToString());
+                dictionary = cc.words;
+                Debug.Log(dictionary[0,0] + "," + dictionary[0,1] + " arr size: " + dictionary.GetLength(0) );
             }
             catch
             {
@@ -82,14 +90,14 @@ namespace Crossword
 
         private static void AddFirstWordToMatrix()
         {
-            int id = Random.Range(0, dictionary.Length);
-            string word = dictionary[id];   
+            int id = Random.Range(0, DictionaryLenght);
+            string word = dictionary[id,0];   
 
             bool horizontal = Random.Range(0, 2) == 1;
 
             //Debug.Log("Prima parola: <" + word + ">, orientamento orizzontale=" + horizontal);
 
-            generationInfo.wordInfoList.Add(CreateWordInfo(word,0,0,horizontal));
+            generationInfo.wordInfoList.Add(CreateWordInfo(word, dictionary[id, 1], 0,0,horizontal));
             usedDictionaryIDs.Add(id);
             if (horizontal)
                 generationInfo.xMax = word.Length - 1;
@@ -101,12 +109,12 @@ namespace Crossword
         {
             WordInfo newWord;
 
-            int id = Random.Range(0, dictionary.Length);
+            int id = Random.Range(0, DictionaryLenght);
             if (uniqueWords)
                 while (usedDictionaryIDs.Contains(id))
                 {
-                    id = Random.Range(0, dictionary.Length);
-                    if (dictionary.Length <= usedDictionaryIDs.Count)
+                    id = Random.Range(0, DictionaryLenght);
+                    if (DictionaryLenght <= usedDictionaryIDs.Count)
                     {
                         Debug.LogWarning("!! !! !! !! Il dizionario non contiene abbastanza elementi per usare il numero di parole richieste differenti. Questo potrebbe essere stato causato da tentativi falliti prematuri, che potrebbero invece funzionare una volta aggiunte più parole.");
                         TARGET_NUMBER_OF_WORDS = generationInfo.wordInfoList.Count;
@@ -114,7 +122,7 @@ namespace Crossword
                     }
                 }
 
-            newWord.word = dictionary[id];
+            newWord.word = dictionary[id,0];
             usedDictionaryIDs.Add(id);
 
             //Console.WriteLine("Trying to add <" + newWord.word + ">");
@@ -168,6 +176,7 @@ namespace Crossword
                                             }                                                           //non ha nel suo x range la x della nuova parola
                                             else
                                             {
+
                                                 if (w.x == newWord.x + 1 || (w.x + w.word.Length) == newWord.x)     //controllo che nessuna parola finisca subito prima o parta subito dopo
                                                 {
                                                     valid = false;
@@ -188,6 +197,7 @@ namespace Crossword
                                     }
                                     if (valid)
                                     {
+                                        newWord.clue = dictionary[id, 1];
                                         generationInfo.wordInfoList.Add(newWord);
                                         generationInfo.yMax = Mathf.Max(generationInfo.yMax, wordMaxCoord);
                                         generationInfo.yMin = Mathf.Min(generationInfo.yMin, wordMinCoord);
@@ -254,6 +264,7 @@ namespace Crossword
                                     }
                                     if (valid)
                                     {
+                                        newWord.clue = dictionary[id, 1];
                                         generationInfo.wordInfoList.Add(newWord);
                                         generationInfo.xMax = Mathf.Max(generationInfo.xMax, wordMaxCoord);
                                         generationInfo.xMin = Mathf.Min(generationInfo.xMin, wordMinCoord);
@@ -316,10 +327,11 @@ namespace Crossword
             }
         }
 
-        static WordInfo CreateWordInfo(string word, int x, int y, bool horizontal/*, int dictionaryId*/)
+        static WordInfo CreateWordInfo(string word, string clue, int x, int y, bool horizontal/*, int dictionaryId*/)
         {
             WordInfo info = new WordInfo();
             info.word = word;
+            info.clue = clue;
             info.x = x;
             info.y = y;
             info.horizontal = horizontal;
@@ -331,6 +343,7 @@ namespace Crossword
     public struct WordInfo
     {
         public string word;
+        public string clue;
         public int x, y;
         public bool horizontal;
 
@@ -346,9 +359,10 @@ namespace Crossword
     }
 
     [System.Serializable]
-    public class Dictionary
+    public class Dizionario
     {
-        public string[] words;
+        public string[,] words;
     }
+
 }
 

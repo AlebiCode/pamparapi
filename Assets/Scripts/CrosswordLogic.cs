@@ -20,7 +20,7 @@ namespace Crossword
 
         [SerializeField] private Tassello tasselloPrefab;
         [SerializeField] private GameObject crosswordParent;
-        [SerializeField] private InputField inputField;
+        //[SerializeField] private InputField inputField;
         [SerializeField] private Text pamparapiText;
 
         private List<WordObject> wordObjects = new List<WordObject>();
@@ -49,7 +49,7 @@ namespace Crossword
 
                 //------debug
                 if(currentSelectedWordObject != null)
-                    pamparapiText.text = currentSelectedWordObject.GetWordInfo.word;
+                    pamparapiText.text = currentSelectedWordObject.GetWordInfo.clue;
             }
             get { return currentSelectedWordObject; }
         }
