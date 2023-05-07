@@ -18,7 +18,10 @@ public class UiManager : MonoBehaviour
 
     [HideInInspector]public bool updateBars;
 
-    [SerializeField] RectTransform crossWordPanel;
+    Vector2Int canvasSizeForAnchoredPositions;
+    Vector2 sizeMult;
+
+    [SerializeField] RectTransform crossWordWindow;
     private Vector3 crossWordWindow_onScreenPosition;
     private Vector3 crossWordWindow_offScreenPosition;
     [SerializeField] RectTransform fullTastieraPanel;
@@ -45,8 +48,7 @@ public class UiManager : MonoBehaviour
     void Start()
     {
         canvasScaler = canvas.GetComponent<CanvasScaler>();
-        UiResizer();
-        GetAnimationPositions();
+        StartCoroutine(UiInitialization());
     }
 
     private void LateUpdate()
@@ -54,47 +56,50 @@ public class UiManager : MonoBehaviour
         if (updateBars)
             UpdateBars();
     }
-
-    private void MultRectTransformWidthAndHeight(RectTransform rectTransform, Vector2 values)
+    
+    private IEnumerator UiInitialization()
     {
-        rectTransform.rect.Set(rectTransform.rect.x, rectTransform.rect.y, rectTransform.rect.width * values.x, rectTransform.rect.height * values.y);
+        //Debug.Log("Res: " + Screen.currentResolution + "Canvas pixelrect Height" + canvas.pixelRect.height + " MinMax diff " + (canvas.pixelRect.yMax - canvas.pixelRect.yMin));
+        yield return new WaitForSeconds(1);  //a quanto pare non tutte le ui sono sistemate dal canvas nel primo frame. Quindi aspetto un frame. Magari non è nemmeno più così lol
+
+        sizeMult = new Vector2(Screen.currentResolution.width / canvasScaler.referenceResolution.x, Screen.currentResolution.height / canvasScaler.referenceResolution.y);
+        //Debug.Log(sizeMult);
+        //questo se è settato a conservare la larghezza!
+        canvasSizeForAnchoredPositions = new Vector2Int(Mathf.RoundToInt(Screen.currentResolution.width / sizeMult.x), Mathf.RoundToInt(Screen.currentResolution.height / sizeMult.x));
+        //Debug.Log(canvasSizeForAnchoredPositions);
+
+        CrossWordUi();
     }
-    private void UiResizer()
-    {
-        RectTransform canvasRectTransform = canvas.GetComponent<RectTransform>();
-        Vector2 referenceRes = canvasScaler.referenceResolution;
-        Vector2 res = new Vector2(canvasRectTransform.rect.width, canvasRectTransform.rect.height);
-        Vector2 scaleMult = new Vector2(res.x / referenceRes.x, res.y / referenceRes.y);
-        MultRectTransformWidthAndHeight(crossWordPanel, scaleMult);
 
+    private void CrossWordUi()
+    {
+        //Debug.Log(crossWordWindow.sizeDelta);
+        crossWordWindow.sizeDelta = new Vector2(0, canvasSizeForAnchoredPositions.y * 0.6f);
+        crossWordWindow_offScreenPosition = new Vector2(0, 0);
+        crossWordWindow_onScreenPosition = crossWordWindow_offScreenPosition - new Vector3(0, crossWordWindow.rect.height);
+        crossWordWindow.anchoredPosition = crossWordWindow_offScreenPosition;
+
+        fullTastieraPanel.sizeDelta = new Vector2(0, canvasSizeForAnchoredPositions.y * 0.4f);
+        tastiera_onScreenPosition = new Vector2(0,0);
+        tastiera_offScreenPosition = tastiera_onScreenPosition - new Vector3(0, fullTastieraPanel.rect.height);
+        fullTastieraPanel.anchoredPosition = tastiera_offScreenPosition;
+
+        //setto la spritemask della tastiera (che nasconde parte del pamparapì)
         spriteMask.transform.localScale = new Vector3(tastieraBackground.rect.width, tastieraBackground.rect.height, 1);
         spriteMask.transform.position = fullTastieraPanel.transform.position + new Vector3(0, tastieraBackground.rect.height * canvas.transform.lossyScale.y / 2, 0);
     }
 
-    private void GetAnimationPositions()
-    {
-        Vector3 heihtContainer; //la x non è corretta. Serve solo la y
-        RectTransformUtility.ScreenPointToWorldPointInRectangle(crossWordPanel, new Vector2(0, Screen.currentResolution.height), Camera.main, out heihtContainer);
-        crossWordWindow_offScreenPosition = new Vector3(canvas.transform.position.x, heihtContainer.y, canvas.transform.position.z);
-        crossWordWindow_onScreenPosition = crossWordWindow_offScreenPosition - new Vector3(0, crossWordPanel.rect.height * canvas.transform.lossyScale.y, 0);
-        crossWordPanel.transform.position = crossWordWindow_offScreenPosition;
-
-        RectTransformUtility.ScreenPointToWorldPointInRectangle(fullTastieraPanel, new Vector2(0, 0), Camera.main, out heihtContainer);
-        tastiera_onScreenPosition = new Vector3(canvas.transform.position.x, heihtContainer.y, canvas.transform.position.z);
-        tastiera_offScreenPosition = tastiera_onScreenPosition - new Vector3(0, fullTastieraPanel.rect.height * canvas.transform.lossyScale.y, 0);
-        fullTastieraPanel.transform.position = tastiera_offScreenPosition;
-    }
     public void AnimateCrosswordPanels(bool onScreen)
     {
         if (onScreen)
         {
-            crossWordPanel.transform.position = crossWordWindow_onScreenPosition;
-            fullTastieraPanel.transform.position = tastiera_onScreenPosition;
+            crossWordWindow.anchoredPosition = crossWordWindow_onScreenPosition;
+            fullTastieraPanel.anchoredPosition = tastiera_onScreenPosition;
         }
         else
         {
-            crossWordPanel.transform.position = crossWordWindow_offScreenPosition;
-            fullTastieraPanel.transform.position = tastiera_offScreenPosition;
+            crossWordWindow.anchoredPosition = crossWordWindow_offScreenPosition;
+            fullTastieraPanel.anchoredPosition = tastiera_offScreenPosition;
         }
     }
 
