@@ -8,9 +8,10 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
-
+    
     private const string savesFolder = "/Saves";
     private const string saveDataPath = savesFolder + "/SaveData.json";
+    private static string dataPath;
     [SerializeField] private TMP_Text moneyText;
 
     private Inventory myInventory;
@@ -38,6 +39,7 @@ public class GameManager : MonoBehaviour
     {
         if(!instance) instance = this; else Destroy(this);
 
+        dataPath = Application.persistentDataPath;
 
         if (Application.platform == RuntimePlatform.Android)
             Application.targetFrameRate = Screen.currentResolution.refreshRate;
@@ -66,7 +68,7 @@ public class GameManager : MonoBehaviour
     {
         try
         {
-            string path = Application.persistentDataPath + saveDataPath;
+            string path = dataPath + saveDataPath;
             Debug.Log(path);
             StreamReader reader = new StreamReader(path);
             SaveData saveData = JsonUtility.FromJson<SaveData>(reader.ReadToEnd());
@@ -88,6 +90,7 @@ public class GameManager : MonoBehaviour
             {
                 Debug.LogWarning("Could not load save file. Creating new save file.");
                 ResetData();
+                Debug.Log("Tutto ok?");
                 LoadDataFromJson(false);
             }
             else
@@ -101,19 +104,23 @@ public class GameManager : MonoBehaviour
         saveData.inventory = myInventory;
         saveData.fullness = fullness; saveData.love = love; saveData.hygene = hygene;
         saveData.softCurrency = softCurrency;
-        if (!Directory.Exists(Application.persistentDataPath + savesFolder))
-            Directory.CreateDirectory(Application.persistentDataPath + savesFolder);
+        if (!Directory.Exists(dataPath + savesFolder))
+            Directory.CreateDirectory(dataPath + savesFolder);
         string json = JsonUtility.ToJson(saveData);
-        string path = Application.persistentDataPath + saveDataPath;
+        string path = dataPath + saveDataPath;
         File.WriteAllText(path, json);
+        Debug.Log("Tutto ok fino a qua?");
     }
 
     public static void ResetData()
     {
         if (Application.isPlaying)
         {
+            Debug.Log("Alive1?");
             //questo se chiamato da in-game
-            GameManager.instance.MyInventory.ownedItems = new int[(int)EquipementTypeEnum.ENUM_LENGHT];
+            //GameManager.instance.MyInventory.ownedItems = new int[(int)EquipementTypeEnum.ENUM_LENGHT];
+            GameManager.instance.myInventory = new Inventory();
+            Debug.Log("Alive2?");
             GameManager.instance.Fullness = GameManager.instance.Love = GameManager.instance.Hygene = 0.5f;
             GameManager.instance.softCurrency = 200;
             GameManager.instance.SaveDataToJson();
@@ -125,10 +132,10 @@ public class GameManager : MonoBehaviour
             saveData.inventory = new Inventory();
             saveData.fullness = saveData.love = saveData.hygene = 0.5f;
             saveData.softCurrency = 200;
-            if (!Directory.Exists(Application.persistentDataPath + savesFolder))
-                Directory.CreateDirectory(Application.persistentDataPath + savesFolder);
+            if (!Directory.Exists(dataPath + savesFolder))
+                Directory.CreateDirectory(dataPath + savesFolder);
             string json = JsonUtility.ToJson(saveData);
-            string path = Application.persistentDataPath + saveDataPath;
+            string path = dataPath + saveDataPath;
             File.WriteAllText(path, json);
         }
     }
